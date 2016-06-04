@@ -1,0 +1,154 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "version" : "0.0.1",
+    "title" : "TWC",
+    "description" : "This is a sample API for AWS serverless 54chi's tutorial.  You can find out more about Swagger at [http://swagger.io](http://swagger.io).  Blogpost for this project at [54chi](http://54chi.com) (maybe)."
+  },
+  "host" : "something-something.some-region.amazonaws.com",
+  "basePath" : "/api",
+  "schemes" : [ "https" ],
+  "parameters" : {
+    "performer-id" : {
+      "name" : "performer-id",
+      "in" : "path",
+      "description" : "The performer id number",
+      "type" : "number",
+      "required" : true
+    }
+  },
+  "paths" : {
+    "/session" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/users" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/me" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/me/rates" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/me/payments" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/me/follows" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/me/settings" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/performers" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/perfomers/{performer-id}/profile" : {
+      "parameters" : [ {
+        "$ref" : "#/parameters/performer-id"
+      } ],
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/perfomers/{performer-id}/followed-by" : {
+      "parameters" : [ {
+        "$ref" : "#/parameters/performer-id"
+      } ],
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/perfomers/{performer-id}/rating" : {
+      "parameters" : [ {
+        "$ref" : "#/parameters/performer-id"
+      } ],
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/perfomers/{performer-id}/earnings" : {
+      "parameters" : [ {
+        "$ref" : "#/parameters/performer-id"
+      } ],
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/perfomers/{performer-id}/news" : {
+      "parameters" : [ {
+        "$ref" : "#/parameters/performer-id"
+      } ],
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    }
+  }
+}
