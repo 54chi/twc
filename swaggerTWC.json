@@ -1,13 +1,21 @@
 {
   "swagger" : "2.0",
   "info" : {
-    "version" : "0.0.1",
+    "version" : "0.0.2",
     "title" : "TWC",
-    "description" : "This is a sample API for AWS serverless 54chi's tutorial.  You can find out more about Swagger at [http://swagger.io](http://swagger.io).  Blogpost for this project at [54chi](http://54chi.com) (maybe)."
+    "description" : "This is a sample for an API Driven Development with AWS serverless' presentation.  You can find out more about Swagger at [http://swagger.io](http://swagger.io).  Blogpost for this project at [54chi](http://54chi.com) (maybe)."
   },
   "host" : "something-something.some-region.amazonaws.com",
-  "basePath" : "/api",
   "schemes" : [ "https" ],
+  "basePath" : "/api",
+  "produces" : [ "application/json" ],
+  "consumes" : [ "application/json" ],
+  "tags" : [ {
+    "name" : "Users"
+  }, {
+    "name" : "Relationships",
+    "description" : "Relationships are expressed using the following terms:\n\n**outgoing_status**: Your relationship to the user. Can be \"follows\",\n  \"requested\", \"none\".\n**incoming_status**: A user's relationship to you. Can be \"followed_by\",\n  \"requested_by\", \"blocked_by_you\", \"none\".  \n"
+  } ],
   "parameters" : {
     "performer-id" : {
       "name" : "performer-id",
@@ -18,20 +26,274 @@
     }
   },
   "paths" : {
-    "/session" : {
-      "get" : {
+    "/login" : {
+      "post" : {
+        "summary" : "Login user",
+        "description" : "Verifies the given credentials against the user database and returns a set\nof new temporary credentials\n",
+        "parameters" : [ {
+          "name" : "LoginUser",
+          "in" : "body",
+          "description" : "New user details.",
+          "schema" : {
+            "$ref" : "#/definitions/User"
+          }
+        } ],
+        "tags" : [ "Auth" ],
+        "x-amazon-apigateway-integration" : {
+          "type" : "aws",
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:XXXXXXXXXXXX:function:YOUR_FUNCTION_NAME/invocations",
+          "credentials" : "arn:aws:iam::XXXXXXXXXXXX:role/YOUR_LAMBDA_INVOCATION_ROLE",
+          "httpMethod" : "POST",
+          "requestTemplates" : {
+            "application/json" : "{\n  \"action\" : \"com.amazonaws.apigatewaydemo.action.LoginDemoAction\",\n  \"body\" : $input.json('$')\n}\n"
+          },
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            },
+            "BAD.*" : {
+              "statusCode" : "400",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            },
+            "INT.*" : {
+              "statusCode" : "500",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "A new set of temporary credentials",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/LoginUserResponse"
+            }
+          },
+          "400" : {
+            "description" : "Bad request",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "500" : {
+            "description" : "Internal error",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "options" : {
+        "summary" : "CORS support",
+        "description" : "Enable CORS by returning correct headers\n",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "tags" : [ "CORS" ],
+        "x-amazon-apigateway-integration" : {
+          "type" : "mock",
+          "requestTemplates" : {
+            "application/json" : "{\n  \"statusCode\" : 200\n}\n"
+          },
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
+                "method.response.header.Access-Control-Allow-Methods" : "'*'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              },
+              "responseTemplates" : {
+                "application/json" : "{}\n"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Default response for CORS method",
+            "headers" : {
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            }
           }
         }
       }
     },
     "/users" : {
-      "get" : {
+      "post" : {
+        "summary" : "Registers a new user",
+        "description" : "Creates a new user in the DynamoDB backend database and returns a set\nof temporary credentials to sign future requests.\n",
+        "parameters" : [ {
+          "name" : "NewUser",
+          "in" : "body",
+          "description" : "New user details.",
+          "schema" : {
+            "$ref" : "#/definitions/User"
+          }
+        } ],
+        "tags" : [ "Auth" ],
+        "x-amazon-apigateway-integration" : {
+          "type" : "aws",
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:XXXXXXXXXXXX:function:YOUR_FUNCTION_NAME/invocations",
+          "credentials" : "arn:aws:iam::XXXXXXXXXXXX:role/YOUR_LAMBDA_INVOCATION_ROLE",
+          "httpMethod" : "POST",
+          "requestTemplates" : {
+            "application/json" : "{\n  \"action\" : \"com.amazonaws.apigatewaydemo.action.RegisterDemoAction\",\n  \"body\" : $input.json('$')\n}\n"
+          },
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            },
+            "BAD.*" : {
+              "statusCode" : "400",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            },
+            "INT.*" : {
+              "statusCode" : "500",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "The username of the new user and set of temporary credentials",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/RegisterUserResponse"
+            }
+          },
+          "400" : {
+            "description" : "Bad request",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "500" : {
+            "description" : "Internal error",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "get" : {
+        "summary" : "List users",
+        "description" : "Retrieve a list of users",
+        "x-amazon-apigateway-auth" : {
+          "type" : "aws_iam"
+        },
+        "tags" : [ "Users list" ],
+        "x-amazon-apigateway-integration" : {
+          "type" : "aws",
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:XXXXXXXXXXXX:function:YOUR_FUNCTION_NAME/invocations",
+          "credentials" : "arn:aws:iam::*:user/*",
+          "httpMethod" : "POST",
+          "requestTemplates" : {
+            "application/json" : "{\n  \"action\" : \"com.amazonaws.apigatewaydemo.action.ListPerformersDemoAction\",\n  \"body\" : $input.json('$')\n}\n"
+          },
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            },
+            "BAD.*" : {
+              "statusCode" : "400",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            },
+            "INT.*" : {
+              "statusCode" : "500",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "A list of users",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/User"
+            }
+          },
+          "400" : {
+            "description" : "Bad request",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "500" : {
+            "description" : "Internal error",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
           }
         }
       }
@@ -95,9 +357,118 @@
         "$ref" : "#/parameters/performer-id"
       } ],
       "get" : {
+        "summary" : "Get performer by id",
+        "description" : "Returns a performer definition based on the given id",
+        "x-amazon-apigateway-auth" : {
+          "type" : "aws_iam"
+        },
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "tags" : [ "Performer" ],
+        "x-amazon-apigateway-integration" : {
+          "type" : "aws",
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:XXXXXXXXXXXX:function:YOUR_FUNCTION_NAME/invocations",
+          "credentials" : "arn:aws:iam::*:user/*",
+          "httpMethod" : "POST",
+          "requestTemplates" : {
+            "application/json" : "{\n  \"action\" : \"com.amazonaws.apigatewaydemo.action.GetPerformerDemoAction\",\n  \"body\" : {\n    \"performerId\" : \"$input.params('performerId')\"\n  }\n}\n"
+          },
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            },
+            "BAD.*" : {
+              "statusCode" : "400",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            },
+            "INT.*" : {
+              "statusCode" : "500",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "A performer",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Performer"
+            }
+          },
+          "400" : {
+            "description" : "Bad request",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "500" : {
+            "description" : "Internal error",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            },
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "options" : {
+        "summary" : "CORS support",
+        "description" : "Enable CORS by returning correct headers\n",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "tags" : [ "CORS" ],
+        "x-amazon-apigateway-integration" : {
+          "type" : "mock",
+          "requestTemplates" : {
+            "application/json" : "{\n  \"statusCode\" : 200\n}\n"
+          },
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
+                "method.response.header.Access-Control-Allow-Methods" : "'*'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              },
+              "responseTemplates" : {
+                "application/json" : "{}\n"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Default response for CORS method",
+            "headers" : {
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            }
           }
         }
       }
@@ -147,6 +518,124 @@
           "200" : {
             "description" : "OK"
           }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "User" : {
+      "properties" : {
+        "username" : {
+          "type" : "string",
+          "description" : "A unique username for the user"
+        },
+        "password" : {
+          "type" : "string",
+          "description" : "A password for the new user"
+        }
+      }
+    },
+    "RegisterUserResponse" : {
+      "properties" : {
+        "username" : {
+          "type" : "string",
+          "description" : "The username of the new user"
+        },
+        "identityId" : {
+          "type" : "string",
+          "description" : "The unique identifier for the new user"
+        },
+        "token" : {
+          "type" : "string",
+          "description" : "An OpenID token for the new user"
+        },
+        "credentials" : {
+          "type" : "object",
+          "properties" : {
+            "accessKey" : {
+              "type" : "string",
+              "description" : "Temporary access key to sign requests"
+            },
+            "secretKey" : {
+              "type" : "string",
+              "description" : "Temporary secret access key to sign requests"
+            },
+            "sessionToken" : {
+              "type" : "string",
+              "description" : "Tempoarary session token"
+            },
+            "expiration" : {
+              "type" : "integer",
+              "description" : "Expiration date of the temporary credentials in millis since 1/1/1970\n"
+            }
+          }
+        }
+      }
+    },
+    "LoginUserResponse" : {
+      "properties" : {
+        "identityId" : {
+          "type" : "string",
+          "description" : "The unique identifier for the new user"
+        },
+        "token" : {
+          "type" : "string",
+          "description" : "An OpenID token for the new user"
+        },
+        "credentials" : {
+          "type" : "object",
+          "properties" : {
+            "accessKey" : {
+              "type" : "string",
+              "description" : "Temporary access key to sign requests"
+            },
+            "secretKey" : {
+              "type" : "string",
+              "description" : "Temporary secret access key to sign requests"
+            },
+            "sessionToken" : {
+              "type" : "string",
+              "description" : "Tempoarary session token"
+            },
+            "expiration" : {
+              "type" : "integer",
+              "description" : "Expiration date of the temporary credentials in millis since 1/1/1970\n"
+            }
+          }
+        }
+      }
+    },
+    "Performer" : {
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "description" : "The generated unique identifier (system Id) for the performer"
+        },
+        "title" : {
+          "type" : "string",
+          "description" : "Free text title"
+        },
+        "name" : {
+          "type" : "string",
+          "description" : "Free text name"
+        },
+        "performer-id" : {
+          "type" : "string",
+          "description" : "associated tag Id"
+        }
+      }
+    },
+    "Error" : {
+      "properties" : {
+        "code" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "message" : {
+          "type" : "string"
+        },
+        "fields" : {
+          "type" : "string"
         }
       }
     }
