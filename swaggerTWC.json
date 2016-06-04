@@ -3,7 +3,7 @@
   "info" : {
     "version" : "0.0.2",
     "title" : "TWC",
-    "description" : "This is a sample for an API Driven Development with AWS serverless' presentation.  You can find out more about Swagger at [http://swagger.io](http://swagger.io).  Blogpost for this project at [54chi](http://54chi.com) (maybe)."
+    "description" : "This is a sample for an API Driven Development with AWS serverless' presentation.  You can find out more about Swagger at [http://swagger.io](http://swagger.io). Blogpost for this project at [54chi](http://54chi.com) (maybe)."
   },
   "host" : "something-something.some-region.amazonaws.com",
   "schemes" : [ "https" ],
